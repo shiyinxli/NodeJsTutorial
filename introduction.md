@@ -23,4 +23,4 @@ node --version
 npm --version
 ```
 
-next: [[javascript basics]]
+next: [javascript basics](javascript_basics.md)

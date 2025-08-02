@@ -1,4 +1,4 @@
-previous: [[command line usage]]
+previous: [command line usage](command_line_usage.md)
 
 **1. Client Request Phase**
 
@@ -20,4 +20,4 @@ previous: [[command line usage]]
 - When blocking tasks complete, their callbacks are placed in the **Callback Queue**
 - Event Loop processes callbacks and sends responses
 
-next: [[Asynchronous Programming]]
+next: [asynchronous programming](Asynchronous_Programming.md)

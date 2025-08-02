@@ -1,4 +1,4 @@
-previous: [[javascript basics]]
+previous: [javascript basics](javascript_basics.md)
 ```js
 # Run a JavaScript file  
 node app.js  
@@ -33,4 +33,4 @@ npm audit # Check for vulnerabilities
 ```
 
 
-next: [[architecture diagram]]
+next: [architecture diagram](architecture_diagram)

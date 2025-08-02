@@ -1,4 +1,4 @@
-previous: [[architecture diagram]]
+previous: [architecture diagram](architecture_diagram.md)
 ### promises
 ```js
 const fs = require('fs').promises;  
@@ -11,6 +11,37 @@ fs.readFile('myfile.txt', 'utf8')
   .catch(err => console.error('Error:', err));  
   
 console.log('2. This runs before file is read!');
+```
+
+```js
+const example = new Promise((resolve, reject) => {
+  const success = true;
+  if (success) {
+    resolve('OK'); // 进入 then
+  } else {
+    reject('Error'); // 进入 catch
+  }
+});
+
+example
+  .then(result => console.log(result)) // "OK"
+  .catch(error => console.error(error));
+```
+
+```js
+function checkNumber(num) {
+  return new Promise((resolve, reject) => {
+    if (num > 10) {
+      resolve("数字足够大"); // ✅ 进入 .then()
+    } else {
+      reject("数字太小");    // ❌ 进入 .catch()
+    }
+  });
+}
+
+checkNumber(5)
+  .then(result => console.log(result))
+  .catch(error => console.error(error)); // 输出: "数字太小"
 ```
 
 ### async/await
