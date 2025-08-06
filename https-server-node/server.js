@@ -26,11 +26,24 @@ https.createServer(options, (req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ message: 'Hello from JSON endpoint!' }));
 
-  } else {
+  } else if(path === '/echo' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', ()=>{
+        try {
+            const parsed = JSON.parse(body);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ you_sent: parsed }));
+    }catch (e) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        }
+    });}
+  else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('404 Not Found\n');
-  }
-
-}).listen(4433, () => {
+    res.end('404 Not Found\n');}
+  }).listen(4433, () => {
   console.log('HTTPS Server running at https://localhost:4433/');
 });
