@@ -1,7 +1,7 @@
 const https = require('https');
 const fs = require('fs');
 const url = require('url');
-
+const path = require('path');
 
 const options = {
   key: fs.readFileSync('key.pem'),
@@ -10,40 +10,52 @@ const options = {
 
 https.createServer(options, (req, res) => {
   const parsedUrl = url.parse(req.url, true);
-  const path = parsedUrl.pathname;
+  const pathname = parsedUrl.pathname;
 
-  console.log(`Incoming request: ${req.method} ${path}`);
+  console.log(`Incoming request: ${req.method} ${pathname}`);
 
-  if (path === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Welcome to the secure homepage!\n');
+  // Serve homepage
+  if (pathname === '/' && req.method === 'GET') {
+    serveFile(res, 'index.html', 'text/html');
 
-  } else if (path === '/hello') {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Hello there!\n');
+  // Serve about page
+  } else if (pathname === '/about' && req.method === 'GET') {
+    serveFile(res, 'about.html', 'text/html');
 
-  } else if (path === '/json') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ message: 'Hello from JSON endpoint!' }));
+  // Serve static files from /public
+  } else if (pathname.startsWith('/public/')) {
+    const filePath = path.join(__dirname, pathname);
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+      '.css': 'text/css',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.js': 'application/javascript',
+      '.html': 'text/html'
+    };
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    serveFile(res, filePath, contentType);
 
-  } else if(path === '/echo' && req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-    req.on('end', ()=>{
-        try {
-            const parsed = JSON.parse(body);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ you_sent: parsed }));
-    }catch (e) {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Invalid JSON' }));
-        }
-    });}
-  else {
+  // 404
+  } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('404 Not Found\n');}
-  }).listen(4433, () => {
+    res.end('404 Not Found\n');
+  }
+
+}).listen(4433, () => {
   console.log('HTTPS Server running at https://localhost:4433/');
 });
+
+// Helper to serve files
+function serveFile(res, filePath, contentType) {
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('500 Internal Server Error');
+    } else {
+      res.writeHead(200, { 'Content-Type': contentType });
+      res.end(data);
+    }
+  });
+}
