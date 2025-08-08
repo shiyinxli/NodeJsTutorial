@@ -8,6 +8,12 @@ const options = {
   cert: fs.readFileSync('cert.pem'),
 };
 
+let notes = [
+  { id: 1, text: "Learn Node.js https module" },
+  { id: 2, text: "Write secure servers" }
+];
+
+
 https.createServer(options, (req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
@@ -38,12 +44,45 @@ https.createServer(options, (req, res) => {
     serveFile(res, filePath, contentType);
 
   // 404
-  } else {
+  } // API: GET /api/notes
+else if (pathname === '/api/notes' && req.method === 'GET') {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(notes));
+
+  // API: POST /api/notes
+} else if (pathname === '/api/notes' && req.method === 'POST') {
+  let body = '';
+  req.on('data', chunk => {
+    body += chunk.toString();
+  });
+  req.on('end', () => {
+    try {
+      const { text } = JSON.parse(body);
+      if (!text) throw new Error('Missing text');
+      const newNote = { id: Date.now(), text };
+      notes.push(newNote);
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(newNote));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  });
+
+  // API: DELETE /api/notes/:id
+} else if (pathname.startsWith('/api/notes/') && req.method === 'DELETE') {
+  const id = parseInt(pathname.split('/')[3], 10);
+  const index = notes.findIndex(note => note.id === id);
+  if (index !== -1) {
+    const deleted = notes.splice(index, 1);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(deleted[0]));
+  }
+  else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('404 Not Found\n');
   }
-
-}).listen(4433, () => {
+}}).listen(4433, () => {
   console.log('HTTPS Server running at https://localhost:4433/');
 });
 
